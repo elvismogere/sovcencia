@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SovCencia | Sovereign Trust Layer</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --panel: #121212;
+            --text: #00ff41;
+            --text-dim: #008f11;
+            --alert: #ff003c;
+            --border: #1f1f1f;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 { font-size: 2.5rem; margin-bottom: 5px; letter-spacing: 4px; text-shadow: 0 0 10px var(--text); }
+        .subtitle { color: var(--text-dim); margin-bottom: 30px; font-size: 0.9rem; }
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1200px; }
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+        }
+        .panel h2 { font-size: 1.2rem; margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .data-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 1.1rem; }
+        .value { font-weight: bold; }
+        .pass { color: var(--text); }
+        .fail { color: var(--alert); text-shadow: 0 0 8px var(--alert); }
+        .log-box {
+            height: 300px;
+            overflow-y: auto;
+            background: #050505;
+            border: 1px solid var(--border);
+            padding: 10px;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+        .log-entry { margin: 5px 0; border-bottom: 1px dashed #222; padding-bottom: 5px; }
+        .log-time { color: var(--text-dim); font-size: 0.75rem; }
+        button {
+            background: transparent;
+            color: var(--alert);
+            border: 1px solid var(--alert);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            margin-top: 15px;
+            width: 100%;
+            transition: 0.3s;
+        }
+        button:hover { background: var(--alert); color: var(--bg); }
+        .warning { animation: blink 1s infinite; text-align: center; margin-top: 20px; font-weight: bold; display: none; }
+        @keyframes blink { 50% { opacity: 0; } }
+        .flags { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div class="flags">🇰🇪 🤝 🇨🇭</div>
+    <h1>SOVCENCIA</h1>
+    <div class="subtitle">Physical-Deterministic Cryptographic Oracle (PDCO)</div>
+    <div class="subtitle">By Elvis Mogere | Sovereign Trust Layer for Article 6</div>
+
+    <div class="container">
+        <!-- Left Panel: Physical Reality vs Reported -->
+        <div class="panel">
+            <h2>[ KERNEL VALIDATION DECK ]</h2>
+            <div class="data-row">
+                <span>Solar Array Capacity (A_array):</span>
+                <span class="value">5,000 m²</span>
+            </div>
+            <div class="data-row">
+                <span>Panel Efficiency (η):</span>
+                <span class="value">22%</span>
+            </div>
+            <hr style="border-color: var(--border);">
+            <div class="data-row">
+                <span>Reported Telemetry (P_reported):</span>
+                <span class="value" id="reported-power">850 kW</span>
+            </div>
+            <div class="data-row">
+                <span>Real-Time Irradiance (GHI):</span>
+                <span class="value" id="ghi-value">-- W/m²</span>
+            </div>
+            <div class="data-row">
+                <span>Physical Maximum (P_max):</span>
+                <span class="value" id="max-power">-- kW</span>
+            </div>
+            <hr style="border-color: var(--border);">
+            <div class="data-row">
+                <span>Cryptographic Signature (Ed25519):</span>
+                <span class="value pass">VERIFIED</span>
+            </div>
+            <div class="data-row">
+                <span>Consensus Status:</span>
+                <span class="value pass" id="consensus-status">STABLE</span>
+            </div>
+            <button onclick="simulateAttack()">SIMULATE MAN-IN-THE-MIDDLE ATTACK</button>
+        </div>
+
+        <!-- Right Panel: System Logs -->
+        <div class="panel">
+            <h2>[ IMMUTABLE LEDGER LOGS ]</h2>
+            <div class="log-box" id="log-box">
+                <div class="log-entry"><span class="log-time">[SYSTEM]</span> SovCencia Kernel v1.0.0 Initialized.</div>
+                <div class="log-entry"><span class="log-time">[SYSTEM]</span> Connected to Swiss Article 6 Node.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="warning fail" id="system-warning">
+        ⚠️ PHYSICAL CONSTRAINT VIOLATION: TELEMETRY SPOOFING DETECTED. CARBON MINTING REVOKED. ⚠️
+    </div>
+
+    <script>
+        let isAttacked = false;
+        
+        function getRandomArbitrary(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function updateDashboard() {
+            // Simulate real-time GHI (Cloud cover variations)
+            let ghi = isAttacked ? getRandomArbitrary(300, 500) : getRandomArbitrary(700, 950);
+            
+            // Calculate P_max based on the formula: A * eff * GHI * tolerance (1.05)
+            let p_max = (5000 * 0.22 * ghi * 1.05) / 1000; 
+            
+            // Reported power
+            let p_reported = isAttacked ? 850 : getRandomArbitrary(p_max * 0.85, p_max * 0.98);
+            
+            // Update DOM
+            document.getElementById('ghi-value').innerText = ghi.toFixed(0) + ' W/m²';
+            document.getElementById('max-power').innerText = p_max.toFixed(0) + ' kW';
+            document.getElementById('reported-power').innerText = p_reported.toFixed(0) + ' kW';
+
+            // Validation Logic
+            if (p_reported > p_max) {
+                document.getElementById('consensus-status').innerText = 'SHATTERED';
+                document.getElementById('consensus-status').className = 'value fail';
+                document.getElementById('system-warning').style.display = 'block';
+                addLog(`⚠️ ALERT: P_reported (${p_reported.toFixed(0)}kW) > P_max (${p_max.toFixed(0)}kW). Physical laws violated.`, true);
+            } else {
+                document.getElementById('consensus-status').innerText = 'STABLE';
+                document.getElementById('consensus-status').className = 'value pass';
+                document.getElementById('system-warning').style.display = 'none';
+                addLog(`SUCCESS: Block validated. Minted ${(p_reported * 0.0001).toFixed(4)} Carbon Tokens.`, false);
+            }
+        }
+
+        function addLog(message, isAlert) {
+            const box = document.getElementById('log-box');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="${isAlert ? 'fail' : ''}">${message}</span>`;
+            box.appendChild(entry);
+            
+            // Keep logs clean
+            if(box.children.length > 20) {
+                box.removeChild(box.firstChild);
+            }
+        }
+
+        function simulateAttack() {
+            isAttacked = true;
+            addLog("🚨 INTRUSION DETECTED: Modbus TCP stream intercepted. Injecting spoofed payload.", true);
+            updateDashboard();
+            
+            // Recover after 5 seconds
+            setTimeout(() => {
+                isAttacked = false;
+                addLog("🛡️ KILL-SWITCH ACTIVATED. Connection severed. Re-validating physical baseline...", false);
+            }, 5000);
+        }
+
+        // Run every 3 seconds
+        setInterval(() => {
+            if(!isAttacked) updateDashboard();
+        }, 3000);
+        
+        // Initial run
+        updateDashboard();
+    </script>
+</body>
+</html>
